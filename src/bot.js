@@ -2,6 +2,7 @@ import { Telegraf } from 'telegraf';
 import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import path from 'path';
+import http from 'http';
 import { tools } from './tools.js';
 import { syncModels } from './model-sync.js';
 import { executeTool } from './executor.js';
@@ -579,6 +580,13 @@ async function start(retries = 3) {
     bot.startPolling();
     console.log('✅ Agent Bot is running!');
     console.log('🔧 Tools:', tools.map(t => t.name).join(', '));
+
+    // Keep-alive heartbeat: light CPU activity every 2 minutes to prevent
+    // sandbox from being reclaimed due to idle CPU detection
+    setInterval(() => {
+      const t = Date.now();
+      for (let i = 0; i < 1000; i++) Math.sqrt(t + i);
+    }, 120_000);
 
     // Notify authorized users that the bot is online
     await notifyStartup();
